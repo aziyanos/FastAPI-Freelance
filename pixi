@@ -1,0 +1,44 @@
+✅ Всё исправлено:
+Критические моменты:
+✅ skill_id опционален - клиенты могут регистрироваться
+✅ Правильные типы Decimal для бюджетов
+✅ Все timestamp'ы с server_default=func.now()
+✅ updated_at с onupdate=func.now()
+✅ CheckConstraint на rating (1-5)
+✅ Пароль обязателен (без nullable=True)
+Производительность:
+✅ Индексы на всех внешних ключах
+✅ Индексы на user_name, email, category_name
+✅ Каскадное удаление настроено правильно
+Архитектура:
+✅ Many-to-many связь Skill ↔ Project
+✅ Самореференциальные связи в Review (reviewer/target)
+✅ Правильные relationships с back_populates
+✅ Enum'ы для ролей и статусов
+
+
+
+api
+Шаг	Что делает	SQL-аналог	Результат
+1	db.query(Project)	SELECT * FROM projects	Создаёт заготовку запроса
+2	.filter(Project.id == project_id)	WHERE id = ?	Добавляет условие
+3	.first()	LIMIT 1	Выполняет запрос
+4	Результат присваивается переменной	—
+
+
+
+"Могу ли я создать пользователя с этой схемой?"
+"Что придет в API response?"
+"Какие данные клиент может/не может менять?"
+Response из Fetch API представляет собой ответ на запрос
+
+
+async driver
+Основные изменения:
+
+AsyncSession вместо Session
+select() вместо query() для запросов
+await db.execute() для выполнения запросов
+result.scalars().all() или result.scalar_one_or_none() для получения результатов
+await перед всеми операциями БД (commit, refresh, delete)
+async_session_maker в get_db (вам нужно настроить его в database.py
