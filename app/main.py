@@ -4,10 +4,11 @@ from app.db.database import async_session_maker
 import uvicorn
 from datetime import datetime
 from app.api import (skills, users, categories, auth,
-                     projects, offers, reviews,)
+                     projects, offers, reviews, social_auth)
 #from app.middlewares.middleware import LoggingMiddleware
 from app.middlewares.middleware import logging_middleware
 from app.admin.setup import setup_admin
+from starlette.middleware.sessions import SessionMiddleware
 
 
 
@@ -24,12 +25,14 @@ freelance = FastAPI()
 freelance.include_router(skills.skill_router)
 freelance.include_router(users.user_router)
 freelance.include_router(auth.auth_router)
+freelance.include_router(social_auth.social_router)
 freelance.include_router(categories.category_router)
 freelance.include_router(projects.project_router)
 freelance.include_router(offers.offer_router)
 freelance.include_router(reviews.review_router)
 
 setup_admin(freelance)
+
 
 
 @freelance.get("/health/")
@@ -59,6 +62,13 @@ async def Home():
 async def custom_logging_middleware(request, call_next):
     return await logging_middleware(request, call_next)
 
+
+
+freelance.add_middleware(
+    SessionMiddleware,
+    secret_key="SECRET_KEY",
+    https_only=False  # True, если используете HTTPS
+)
 
 
 if __name__ == '__main__':
