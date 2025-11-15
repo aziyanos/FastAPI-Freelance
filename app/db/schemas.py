@@ -3,6 +3,8 @@ from typing import Optional
 from app.db.models import RoleChoices, StatusChoices
 from datetime import datetime, date
 from decimal import Decimal
+from pydantic import field_validator
+import re
 
 
 #////////////////////////////////////////////////////
@@ -41,6 +43,16 @@ class UserProfileBaseSchema(BaseModel):
 class UserProfileCreateSchema(UserProfileBaseSchema):
     password: str = Field(min_length=5, max_length=100)
 
+    @field_validator('password')
+    def validate_password(cls, v):
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain uppercase')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain lowercase')
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain digit')
+        return v
+
 
 class UserProfileDetailSchema(UserProfileBaseSchema):
     id: int
@@ -68,6 +80,16 @@ class UserProfileRegisterSchema(BaseModel):
     phone_number: Optional[str] = None
     role: RoleChoices
     avatar: Optional[str] = Field(None, min_length=1, max_length=250)
+
+    @field_validator('password')
+    def validate_password(cls, v):
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain uppercase')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain lowercase')
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain digit')
+        return v
 
 class UserProfileLoginSchema(BaseModel):
     user_name: str = Field(min_length=1, max_length=100)

@@ -19,12 +19,12 @@ import hashlib
 import base64
 import bcrypt
 from app.config import *
+from sqlalchemy.exc import IntegrityError
+import logging
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from app.db.deps import get_db
 #без passlib, прямой bcrypt
-
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        async with session.begin():
-            yield session
 
 
 auth_router = APIRouter(prefix='/auth', tags=['Auth'])
@@ -64,6 +64,7 @@ def create_refresh_token(data: dict) -> str:
 
 @auth_router.post('/register', response_model=dict)
 async def register(user:UserProfileRegisterSchema, db:AsyncSession = Depends(get_db)):
+
     # Проверка существования username
     result = await db.execute(
         select(UserProfile).filter(UserProfile.user_name == user.user_name)
@@ -84,7 +85,6 @@ async def register(user:UserProfileRegisterSchema, db:AsyncSession = Depends(get
 
 
     hash_password = get_password_hash(user.password)
-
     # Создаем пользователя
     user_db = UserProfile(
         first_name=user.first_name,
@@ -99,10 +99,15 @@ async def register(user:UserProfileRegisterSchema, db:AsyncSession = Depends(get
 
     db.add(user_db)
     await db.flush()
-
     return {"message": "Вы успешно зарегистрировались", "user_id": user_db.id}
 
 
+
+
+limiter = Limiter(key_func=get_remote_address)
+
+@auth_router.post('/login')
+@limiter.limit("5/minute") # Максимум 5 попыток в минуту
 @auth_router.post('/login')
 async def login(form_data: UserProfileLoginSchema, db: AsyncSession = Depends(get_db)):
     """Вход пользователя"""

@@ -7,18 +7,10 @@ from app.db.schemas import (UserProfileOutSchema,
                             UserProfileUpdateSchema,
                             UserProfileDetailSchema,
                             UserProfileCreateSchema)
-from app.db.database import async_session_maker
-from typing import List, AsyncGenerator
+from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-
-
-
-#Используйте flush() в endpoints, а не refresh()
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        async with session.begin():
-            yield session
+from app.db.deps import get_db
 
 
 user_router = APIRouter(prefix='/user', tags=['UserProfile'])

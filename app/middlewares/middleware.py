@@ -19,9 +19,9 @@ app = FastAPI()
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
     start_time = time.time()
-
+    safe_url = str(request.url.path)
     # Логируем входящий запрос (включая query параметры)
-    logger.info(f"➡️  {request.method} {request.url}")
+    logger.info(f"➡️  {request.method} {safe_url.url}")
 
     try:
         # Передаем управление следующему middleware или обработчику

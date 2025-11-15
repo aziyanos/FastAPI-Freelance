@@ -7,13 +7,7 @@ from app.db.database import async_session_maker
 from app.db.schemas import (OfferOutSchema, OfferCreateSchema,
                             OfferUpdateSchema, OfferDetailSchema)
 from app.db.models import Offer
-
-
-#Используйте flush() в endpoints, а не refresh()
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        async with session.begin():
-            yield session
+from app.db.deps import get_db
 
 
 offer_router = APIRouter(prefix="/offers", tags=["Offers"])

@@ -6,13 +6,7 @@ from app.db.database import async_session_maker
 from app.db.schemas import (ReviewOutSchema, ReviewCreateSchema,
                             ReviewUpdateSchema, ReviewDetailSchema)
 from app.db.models import Review
-
-
-#Используйте flush() в endpoints, а не refresh()
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        async with session.begin():
-            yield session
+from app.db.deps import get_db
 
 
 review_router = APIRouter(prefix="/reviews", tags=["Reviews"])

@@ -1,12 +1,8 @@
-from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
-
-from app.db.database import AsyncSession, async_session_maker
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from starlette.requests import Request
 from app.config import settings
 from authlib.integrations.starlette_client import OAuth
-from typing import AsyncGenerator
+
 
 
 oauth = OAuth()
@@ -26,12 +22,6 @@ oauth.register(
 )
 
 social_router = APIRouter(prefix='/oauth', tags=['OAuth'])
-
-#Используйте flush() в endpoints, а не refresh()
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        async with session.begin(): # ← Автоматический db.commit/rollback
-            yield session
 
 
 @social_router.get('/google')

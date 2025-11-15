@@ -6,13 +6,7 @@ from app.db.database import async_session_maker
 from app.db.schemas import (SkillOutSchema, SkillCreateSchema,
                             SkillUpdateSchema, SkillDetailSchema)
 from app.db.models import Skill
-
-
-#Используйте flush() в endpoints, а не refresh()
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        async with session.begin():
-            yield session
+from app.db.deps import get_db
 
 
 skill_router = APIRouter(prefix='/skill', tags=["Skills"])
