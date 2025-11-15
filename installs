@@ -1,0 +1,7 @@
+ pip install python-jose[cryptography]
+ fastapi
+uvicorn
+sqlalchemy
+passlib[bcrypt]-Безопасное хеширование паролей
+python-jose[cryptography]-Создание и проверка JWT токенов (JSON Web Tokens)
+python-multipart-Обработка form-data запросов в FastAPI

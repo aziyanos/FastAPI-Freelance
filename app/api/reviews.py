@@ -1,67 +1,70 @@
-from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, APIRouter
-from typing import List
-from app.db.database import SessionLocal
-from app.db.schemas import ReviewSchema
+from typing import List, AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from app.db.database import async_session_maker
+from app.db.schemas import (ReviewOutSchema, ReviewCreateSchema,
+                            ReviewUpdateSchema, ReviewDetailSchema)
 from app.db.models import Review
 
 
-async def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+#Используйте flush() в endpoints, а не refresh()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        async with session.begin():
+            yield session
 
 
 review_router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
 
-@review_router.get('/', response_model=List[ReviewSchema])
-async def list_reviews(db: Session = Depends(get_db)):
-    review_db = db.query(Review).all()
+@review_router.get('/', response_model=List[ReviewOutSchema])
+async def list_reviews(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Review))
+    review_db = result.scalars().all()
     return review_db
 
 
-@review_router.post('/', response_model=ReviewSchema)
-async def create_review(review_create: ReviewSchema,
-                        db: Session = Depends(get_db)):
-    new_review = Review(**review_create.dict())
+@review_router.post('/', response_model=ReviewOutSchema)
+async def create_review(review_create: ReviewCreateSchema,
+                        db: AsyncSession = Depends(get_db)):
+    new_review = Review(**review_create.model_dump()) #в место dict, model_dump новая версия sqlal
     db.add(new_review)
-    db.commit()
-    db.refresh(new_review)
+    await db.flush()
     return new_review
 
 
-@review_router.get('/{review_id}', response_model=ReviewSchema)
-async def detail_review(review_id: int, db: Session
-                        =Depends(get_db)):
-    review_db = db.query(Review).filter(Review.id == review_id).first()
+@review_router.get('/{review_id}', response_model=ReviewDetailSchema)
+async def detail_review(review_id: int, db: AsyncSession
+                                                    =Depends(get_db)):
+    result = await db.execute(select(Review).filter(Review.id == review_id))
+    review_db = result.scalar_one_or_none()
     if not review_db:
         raise HTTPException(status_code=404, detail="Review not found")
     return review_db
 
 
-@review_router.put('/{review_id}', response_model=ReviewSchema)
-async def update_review(review_id: int, review_update: ReviewSchema,
-                        db: Session = Depends(get_db)):
-    review_db = db.query(Review).filter(Review.id == review_id).first()
+@review_router.put('/{review_id}', response_model=ReviewOutSchema)
+async def update_review(review_id: int, review_update: ReviewUpdateSchema,
+                        db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Review).filter(Review.id == review_id))
+    review_db = result.scalar_one_or_none()
     if not review_db:
         raise HTTPException(status_code=404, detail="Review not found")
-    for key, value in review_update.dict().items():
+    for key, value in review_update.dict(exclude_unset=True).items():
         setattr(review_db, key, value)
-    db.commit()
-    db.refresh(review_db)
+    await db.flush()
     return review_db
 
 
 @review_router.delete('/{review_id}')
-async def delete_review(review_id: int, db: Session = Depends(get_db)):
-    review_db = db.query(Review).filter(Review.id == review_id).first()
+async def delete_review(review_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Review).filter(Review.id == review_id))
+    review_db = result.scalar_one_or_none()
     if not review_db:
         raise HTTPException(status_code=404, detail="Review not found")
-    db.delete(review_db)
-    db.commit()
+    await db.delete(review_db)
+    await db.flush()
     return {'message': 'Review deleted'}
 
 

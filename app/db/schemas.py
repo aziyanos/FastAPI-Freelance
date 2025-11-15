@@ -13,6 +13,10 @@ class SkillSchemaBase(BaseModel):
 class SkillCreateSchema(SkillSchemaBase):
     pass
 
+class SkillDetailSchema(SkillSchemaBase):
+    id: int
+    pass
+
 class SkillUpdateSchema(BaseModel):
     skill_name: Optional[str] = Field(None, min_length=1, max_length=250)
     # Можно отправить пустое тело, если ничего не меняем
@@ -37,7 +41,9 @@ class UserProfileBaseSchema(BaseModel):
 class UserProfileCreateSchema(UserProfileBaseSchema):
     password: str = Field(min_length=5, max_length=100)
 
+
 class UserProfileDetailSchema(UserProfileBaseSchema):
+    id: int
     pass
 
 class UserProfileUpdateSchema(BaseModel):
@@ -51,6 +57,21 @@ class UserProfileUpdateSchema(BaseModel):
     biography: Optional[str] = Field(None, min_length=5, max_length=2000)
     avatar: Optional[str] = Field(None, max_length=250)
     password: Optional[str] = Field(None, min_length=8)
+
+class UserProfileRegisterSchema(BaseModel):
+    first_name: str = Field(min_length=1, max_length=100)
+    last_name: str = Field(min_length=1, max_length=100)
+    user_name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=5, max_length=72)
+    age: Optional[int] = Field(None, gt=0, lt=100)
+    phone_number: Optional[str] = None
+    role: RoleChoices
+    avatar: Optional[str] = Field(None, min_length=1, max_length=250)
+
+class UserProfileLoginSchema(BaseModel):
+    user_name: str = Field(min_length=1, max_length=100)
+    password: str = Field(min_length=1, max_length=72)
 
 class UserProfileOutSchema(UserProfileBaseSchema):
     id: int
@@ -69,6 +90,7 @@ class CategoryUpdateSchema(CategoryBaseSchema):
     pass
 
 class CategoryDetailSchema(CategoryBaseSchema):
+    id: int
     pass
 
 class CategoryOutSchema(CategoryBaseSchema):
@@ -99,6 +121,7 @@ class ProjectUpdateSchema(BaseModel):
     status: Optional[StatusChoices] = None
 
 class ProjectDetailSchema(ProjectBaseSchema):
+    id: int
     pass
 
 class ProjectOutSchema(ProjectBaseSchema):
@@ -120,6 +143,7 @@ class OfferCreateSchema(OfferBaseSchema):
     pass
 
 class OfferDetailSchema(OfferBaseSchema):
+    id: int
     pass
 
 class OfferUpdateSchema(BaseModel):
@@ -147,6 +171,7 @@ class ReviewCreateSchema(ReviewBaseSchema):
     pass
 
 class ReviewDetailSchema(ReviewBaseSchema):
+    id: int
     pass
 
 class ReviewUpdateSchema(BaseModel):

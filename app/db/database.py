@@ -1,12 +1,25 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import (create_async_engine,
+                                    async_sessionmaker,
+                                    AsyncSession)
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
+from typing import AsyncGenerator
+
+DB_URL = 'postgresql+asyncpg://postgres:adminadmin@localhost/freelance'
+
+engine = create_async_engine(DB_URL, echo=True)
+
+async_session_maker = async_sessionmaker(engine, class_=AsyncSession,
+                                         expire_on_commit=False)
 
 
-DB_URL = 'postgresql://postgres:adminadmin@localhost/freelance'
-engine = create_engine(DB_URL)
 
-SessionLocal = sessionmaker(bind=engine)
+#Base (современный способ)
+class Base(DeclarativeBase):
+    pass
 
-Base = declarative_base()
+
+# Dependency для FastAPI
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session_maker() as session:
+        yield session
