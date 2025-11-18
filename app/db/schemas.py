@@ -13,11 +13,11 @@ class SkillSchemaBase(BaseModel):
     skill_name: str = Field(min_length=1, max_length=250)
 
 class SkillCreateSchema(SkillSchemaBase):
-    pass
+    ...
 
 class SkillDetailSchema(SkillSchemaBase):
     id: int
-    pass
+    ...
 
 class SkillUpdateSchema(BaseModel):
     skill_name: Optional[str] = Field(None, min_length=1, max_length=250)
@@ -30,7 +30,7 @@ class SkillOutSchema(SkillSchemaBase):
 
 #////////////////////////////////////////////////////
 class UserProfileBaseSchema(BaseModel):
-    first_name: str = Field(min_length=1, max_length=100)
+    first_name: str = Field(... ,min_length=1, max_length=100)
     last_name: str = Field(min_length=1, max_length=100)
     user_name: str = Field(min_length=1, max_length=100)
     email: EmailStr
