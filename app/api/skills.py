@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import Depends, HTTPException, APIRouter
 from typing import List, AsyncGenerator
-from app.db.database import async_session_maker
+#from app.db.database import async_session_maker --> вынесли в отедльный файл deps
 from app.db.schemas import (SkillOutSchema, SkillCreateSchema,
                             SkillUpdateSchema, SkillDetailSchema)
 from app.db.models import Skill
